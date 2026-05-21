@@ -5,7 +5,7 @@ class State():
         self.end_state = end_state
 
 
-    def _addTransition(self, at, state):
+    def add_transition(self, at, state):
         if at not in self.transitions:
             self.transitions[at] = []
 
@@ -19,34 +19,42 @@ class Fragment:
         self.start = start
         self.end = end
 
-class NFA():
+class NFA:
     def __init__(self, regex):
         self.start_state = State()
         self.regex = regex
-        self._regexToNFA(regex)
+        self.counter = 0
+        self._regex_to_nfa(regex)
 
-    def _regexToNFA(self, regex):
+    def _regex_to_nfa(self, regex):
         if regex == "":
             start = State("", False)
             start.end_state = True
             return Fragment(start, start)
 
         if len(regex) == 1 and regex not in ("*", "|", "."):
-            start = State("", False)
-            end = State("", True)
+            print(f"processing fragment {regex}")
 
-            start._addTransition(regex, end)
+            start = State(f"q{self.counter}", False)
+            end = State(f"q{self.counter+1}", True)
+            self.counter += 2
+
+            start.add_transition(regex, end)
 
             return Fragment(start, end)
 
         segs = self.parse_regex(regex)
+        print(segs)
 
         nfa_frags = []
         operations = []
 
         for seg in segs:
+            print(f"processing seg {seg}")
             if seg not in ("*", ".", "|"):
-                frag = self._regexToNFA(seg)
+                print(seg)
+                frag = self._regex_to_nfa(seg)
+                print(frag.start.transitions)
                 nfa_frags.append(frag)
 
             elif seg == "*":
@@ -55,69 +63,72 @@ class NFA():
 
                 old_nfa.end.end_state = False
 
-                new_start = State("", False)
-                new_end = State("", True)
+                new_start = State(f"q{self.counter}", False)
+                new_end = State(f"q{self.counter+1}", True)
+                self.counter += 2
 
-                new_start._addTransition("$", old_nfa.start)
-                new_start._addTransition("$", new_end)
+                new_start.add_transition("$", old_nfa.start)
+                new_start.add_transition("$", new_end)
 
-                old_nfa.end._addTransition("$", old_nfa.start)
-                old_nfa.end._addTransition("$", new_end)
+                old_nfa.end.add_transition("$", old_nfa.start)
+                old_nfa.end.add_transition("$", new_end)
 
                 nfa_frags.append(Fragment(new_start, new_end))
 
             elif seg in (".", "|"):
+                print(f"adding {seg} to operations")
                 operations.append(seg)
+                continue
 
-        i = 0
+        i = len(operations)
+        print(f"Condition check {i} {len(nfa_frags)}")
+        print(segs)
 
-        while i < len(operations) and len(nfa_frags) > 2:
-            if operations[i] == ".":
+        while i > 0 and len(nfa_frags) >= 2:
+            print("in condition")
+            if operations[-1] == ".":
+                operations.pop()
 
-                frag1 = nfa_frags[i]
-                frag2 = nfa_frags[i + 1]
+                frag1 = nfa_frags.pop()
+                frag2 = nfa_frags.pop()
 
-                frag1.end.end_state = False
+                frag2.end.end_state = False
 
-                frag1.end._addTransition("$", frag2.start)
+                frag2.end.add_transition("$", frag1.start)
 
-                combined = Fragment(frag1.start, frag2.end)
+                combined = Fragment(frag2.start, frag1.end)
+                print(f"processed concatenation operation")
+                print(combined.end.transitions, combined.end.transitions)
 
-                nfa_frags[i] = combined
-                nfa_frags.pop(i + 1)
-
-                operations.pop(i)
+                nfa_frags.append(combined)
 
             else:
-                i += 1
+                i -= 1
 
         i = 0
 
-        while i < len(operations):
-            if operations[i] == "|":
-
-                frag1 = nfa_frags[i]
-                frag2 = nfa_frags[i + 1]
+        while i < len(operations) and len(nfa_frags) >= 2:
+            if operations[-1] == "|":
+                operations.pop()
+                frag1 = nfa_frags.pop()
+                frag2 = nfa_frags.pop()
 
                 frag1.end.end_state = False
                 frag2.end.end_state = False
 
-                new_start = State("", False)
-                new_end = State("", True)
+                new_start = State(f"q{self.counter}", False)
+                new_end = State(f"q{self.counter+1}", True)
+                self.counter += 2
 
-                new_start._addTransition("$", frag1.start)
-                new_start._addTransition("$", frag2.start)
+                new_start.add_transition("$", frag1.start)
+                new_start.add_transition("$", frag2.start)
 
-                frag1.end._addTransition("$", new_end)
-                frag2.end._addTransition("$", new_end)
+                frag1.end.add_transition("$", new_end)
+                frag2.end.add_transition("$", new_end)
 
                 combined = Fragment(new_start, new_end)
 
-                nfa_frags[i] = combined
-                nfa_frags.pop(i + 1)
-
-                operations.pop(i)
-
+                nfa_frags.append(combined)
             else:
                 i += 1
 
