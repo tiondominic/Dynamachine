@@ -8,6 +8,11 @@ def test_accepts_b():
     a = NFA.NFA("aa|b*")
     assert a.validate_string("b") is True
 
+
+def test_accepts_ab():
+    a = NFA.NFA("ab")
+    assert a.validate_string("ab") is True
+
 def test_accepts_many_bs():
     a = NFA.NFA("aa|b*")
     assert a.validate_string("bbbb") is True
