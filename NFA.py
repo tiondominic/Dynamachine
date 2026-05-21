@@ -178,14 +178,14 @@ class NFA:
                 count += 1
                 if count == 1:
                     continue
-            elif c == (")"):
+            elif c == ")":
                 count -= 1
                 if count == 0:
                     segments.append(temp)
                     temp = ""
                     if i < len(regex) - 1:
                         next = regex[i + 1]
-                        if next != "*" and next != "|" and next != ")":
+                        if next != "*" and next != "|" and next != ")" and c != "|":
                             segments.append(".")
                     continue
 
@@ -195,7 +195,7 @@ class NFA:
                 temp = ""
                 if i < len(regex) - 1:
                     next = regex[i + 1]
-                    if next != "*" and next != "|" and next != ")":
+                    if next != "*" and next != "|" and next != ")" and c != "|":
                         segments.append(".")
 
         return segments
