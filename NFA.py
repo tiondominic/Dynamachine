@@ -52,10 +52,9 @@ class NFA:
         for seg in segs:
             print(f"processing seg {seg}")
             if seg not in ("*", ".", "|"):
-                print(seg)
                 frag = self._regex_to_nfa(seg)
-                print(frag.start.transitions)
                 nfa_frags.append(frag)
+                print("Fragment creation done")
 
             elif seg == "*":
 
@@ -80,30 +79,31 @@ class NFA:
                 operations.append(seg)
                 continue
 
-        i = len(operations)
-        print(f"Condition check {i} {len(nfa_frags)}")
-        print(segs)
 
-        while i > 0 and len(nfa_frags) >= 2:
-            print("in condition")
-            if operations[-1] == ".":
-                operations.pop()
+            i = len(operations)
+            print(f"Condition check {i} {len(nfa_frags)}")
+            print(segs)
 
-                frag1 = nfa_frags.pop()
-                frag2 = nfa_frags.pop()
+            while i > 0 and len(nfa_frags) >= 2:
+                print(f"Processing operation: {operations[-1]}")
+                if operations[-1] == ".":
+                    operations.pop()
 
-                frag2.end.end_state = False
+                    frag1 = nfa_frags.pop()
+                    frag2 = nfa_frags.pop()
 
-                frag2.end.add_transition("$", frag1.start)
+                    frag2.end.end_state = False
 
-                combined = Fragment(frag2.start, frag1.end)
-                print(f"processed concatenation operation")
-                print(combined.end.transitions, combined.end.transitions)
+                    frag2.end.add_transition("$", frag1.start)
 
-                nfa_frags.append(combined)
+                    combined = Fragment(frag2.start, frag1.end)
+                    print(f"processed concatenation operation")
+                    print(combined.end.transitions, combined.end.transitions)
 
-            else:
-                i -= 1
+                    nfa_frags.append(combined)
+
+                else:
+                    i -= 1
 
         i = 0
 
