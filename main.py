@@ -1,8 +1,16 @@
 import NFA
 import draw_nfa
 
-a = NFA.NFA("(a|b)*c|b*")
+regex = "((a|b)c)*"
+a = NFA.NFA(regex)
 
-print("Accepted" if a.validate_string("aa") else "Rejected")
+print(f"Testing regex: {regex}")
+while True:
+    b = input("Input Test String (type exit): ")
+    if b.lower() == "exit":
+        break
+
+    print("Accepted" if a.validate_string(b) else "Rejected")
+
 
 draw_nfa.draw_nfa(a.start_state)

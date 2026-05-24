@@ -21,10 +21,9 @@ class Fragment:
 
 class NFA:
     def __init__(self, regex):
-        self.start_state = State()
         self.regex = regex
         self.counter = 0
-        self._regex_to_nfa(regex)
+        self.start_state = self._regex_to_nfa(regex).start
 
     def _regex_to_nfa(self, regex):
         if regex == "":
@@ -131,8 +130,8 @@ class NFA:
                 nfa_frags.append(combined)
             else:
                 i += 1
-
-        self.start_state = nfa_frags[0].start
+        print(f"Returning: {nfa_frags[0].start}")
+        return nfa_frags[0]
 
     def validate_string(self, string):
         current_states = set()
