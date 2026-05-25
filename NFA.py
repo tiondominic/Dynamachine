@@ -1,18 +1,10 @@
-class State():
-    def __init__(self, state_name="", end_state=False):
-        self.transitions = {}
-        self.state_name = state_name
-        self.end_state = end_state
+import State
 
-
+class NFAState(State.State):
     def add_transition(self, at, state):
         if at not in self.transitions:
             self.transitions[at] = []
-
         self.transitions[at].append(state)
-
-    def __repr__(self):
-        return f"{self.state_name}"
 
 class Fragment:
     def __init__(self, start, end):
@@ -27,15 +19,15 @@ class NFA:
 
     def _regex_to_nfa(self, regex):
         if regex == "":
-            start = State("", False)
+            start = NFAState("", False)
             start.end_state = True
             return Fragment(start, start)
 
         if len(regex) == 1 and regex not in ("*", "|", "."):
             print(f"processing fragment {regex}")
 
-            start = State(f"q{self.counter}", False)
-            end = State(f"q{self.counter+1}", True)
+            start = NFAState(f"q{self.counter}", False)
+            end = NFAState(f"q{self.counter + 1}", True)
             self.counter += 2
 
             start.add_transition(regex, end)
@@ -61,8 +53,8 @@ class NFA:
 
                 old_nfa.end.end_state = False
 
-                new_start = State(f"q{self.counter}", False)
-                new_end = State(f"q{self.counter+1}", True)
+                new_start = NFAState(f"q{self.counter}", False)
+                new_end = NFAState(f"q{self.counter + 1}", True)
                 self.counter += 2
 
                 new_start.add_transition("$", old_nfa.start)
@@ -115,8 +107,8 @@ class NFA:
                 frag1.end.end_state = False
                 frag2.end.end_state = False
 
-                new_start = State(f"q{self.counter}", False)
-                new_end = State(f"q{self.counter+1}", True)
+                new_start = NFAState(f"q{self.counter}", False)
+                new_end = NFAState(f"q{self.counter + 1}", True)
                 self.counter += 2
 
                 new_start.add_transition("$", frag1.start)
@@ -198,9 +190,6 @@ class NFA:
                         segments.append(".")
 
         return segments
-
-    def _compileRegex(self):
-        pass
 
 
 

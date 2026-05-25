@@ -1,13 +1,13 @@
 import graphviz
-from NFA import State
+from NFA import NFAState
 
 import graphviz
 
-def draw_nfa(start_state: State):
+def draw_nfa(start_state: NFAState):
     dot = graphviz.Digraph('NFA', comment='NFA', format='png')
     visited = set()
 
-    def traverse(state: State):
+    def traverse(state: NFAState):
         if state in visited:
             return
 
