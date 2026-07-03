@@ -6,6 +6,7 @@ import graphviz
 def draw_nfa(start_state: NFAState):
     dot = graphviz.Digraph('NFA', comment='NFA', format='png')
     visited = set()
+    dot.attr(rankdir='LR')
 
     def traverse(state: NFAState):
         if state in visited:

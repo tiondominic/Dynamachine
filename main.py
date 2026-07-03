@@ -2,9 +2,15 @@ import NFA
 import DFA
 import draw_nfa
 
-regex = "abcdefghijklmnopqrst"
+regex = "a|b"
 a = NFA.NFA(regex)
-b = DFA.DFA(a)
+a.print_symbols()
+print("printing table")
+a.print_table()
+draw_nfa.draw_nfa(a.start_state)
+b = DFA.DFA(a, a.symbols)
+
+
 
 # print(f"Testing regex: {regex}")
 # while True:

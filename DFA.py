@@ -7,9 +7,12 @@ class DFAState(State.State):
         self.transitions[at] = state
 
 class DFA:
-    def __init__(self, nfa):
+    def __init__(self, nfa, symbols):
         self.nfa = nfa
         self.dfa = None
+        self.transition_table = set()
+        self.symbols = symbols
+        # {q0: {q1, q2, q3, q043}, q1: {qDead} etc..
 
         pass
 
@@ -22,9 +25,11 @@ class DFA:
         self.dfa = None
         print(f"Printing transitions for {self.nfa.start_state}")
         temp = self.nfa.start_state.transitions
-        for i in temp:
-            for j in temp[i]:
-                print(f"{self.nfa.start_state} -{i}> {j}")
 
-        pass
+
+
+
+
+
+
 

@@ -11,23 +11,42 @@ class Fragment:
         self.start = start
         self.end = end
 
+    def __repr__(self):
+        return "Fragment Object"
+
 class NFA:
     def __init__(self, regex):
         self.regex = regex
         self.counter = 0
-        self.start_state = self._regex_to_nfa(regex).start
+        self.symbols = set()
+        self.transition_table = set()
+        self.start_state = self.start(regex).start
+
+
+    def print_symbols(self):
+        print(self.symbols)
+
+    def start(self, regex):
+        temp = self._regex_to_nfa(regex)
+
+        temp.start.initial_state = True
+        self.symbols.add("$")
+        print("===================", temp.start)
+        print(temp)
+        return temp
 
     def _regex_to_nfa(self, regex):
         if regex == "":
-            start = NFAState("", False)
+            start = self.new_state("", False)
             start.end_state = True
             return Fragment(start, start)
 
         if len(regex) == 1 and regex not in ("*", "|", "."):
+            self.symbols.add(regex) # symbol has to have only 1 char therefore here
             print(f"processing fragment {regex}")
 
-            start = NFAState(f"q{self.counter}", False)
-            end = NFAState(f"q{self.counter + 1}", True)
+            start = self.new_state(f"q{self.counter}", False)
+            end = self.new_state(f"q{self.counter + 1}", True)
             self.counter += 2
 
             start.add_transition(regex, end)
@@ -53,8 +72,8 @@ class NFA:
 
                 old_nfa.end.end_state = False
 
-                new_start = NFAState(f"q{self.counter}", False)
-                new_end = NFAState(f"q{self.counter + 1}", True)
+                new_start = self.new_state(f"q{self.counter}", False)
+                new_end = self.new_state(f"q{self.counter + 1}", True)
                 self.counter += 2
 
                 new_start.add_transition("$", old_nfa.start)
@@ -107,8 +126,8 @@ class NFA:
                 frag1.end.end_state = False
                 frag2.end.end_state = False
 
-                new_start = NFAState(f"q{self.counter}", False)
-                new_end = NFAState(f"q{self.counter + 1}", True)
+                new_start = self.new_state(f"q{self.counter}", False)
+                new_end = self.new_state(f"q{self.counter + 1}", True)
                 self.counter += 2
 
                 new_start.add_transition("$", frag1.start)
@@ -122,7 +141,9 @@ class NFA:
                 nfa_frags.append(combined)
             else:
                 i += 1
+
         print(f"Returning: {nfa_frags[0].start}")
+
         return nfa_frags[0]
 
     def validate_string(self, string):
@@ -191,6 +212,64 @@ class NFA:
 
         return segments
 
+    def new_state(self, name, is_terminal):
+        a = NFAState(name, is_terminal)
+        self.transition_table.add(a)
+        return a
+
+    def print_table(self):
+        visited = set()
+        stack = [self.start_state]
+
+        while stack:
+            state = stack.pop()
+            if state in visited:
+                continue
+
+            visited.add(state)
+
+            for destinations in state.transitions.values():
+                if not isinstance(destinations, (set, list, tuple)):
+                    destinations = [destinations]
+
+                stack.extend(destinations)
+
+        alphabet = sorted(self.symbols, key=lambda x: (x not in ("ε", "$"), x))
+        states = sorted(visited, key=lambda s: s.state_name)
+
+        print(f"{'State':<8}", end="")
+        for symbol in alphabet:
+            print(f"| {symbol:<10}", end="")
+        print()
+
+        print("-" * (8 + len(alphabet) * 13))
+
+        # Rows
+        for state in states:
+            label = (
+                    (">" if state.initial_state else "") +
+                    ("*" if state.end_state else "") +
+                    state.state_name
+            )
+
+            print(f"{label:<8}", end="")
+
+            for symbol in alphabet:
+                destinations = state.transitions.get(symbol, set())
+
+                if not isinstance(destinations, (set, list, tuple)):
+                    destinations = {destinations}
+
+                if destinations:
+                    cell = "{" + ", ".join(
+                        s.state_name for s in sorted(destinations, key=lambda s: s.state_name)
+                    ) + "}"
+                else:
+                    cell = "∅"
+
+                print(f"| {cell:<10}", end="")
+
+            print()
 
 
 
