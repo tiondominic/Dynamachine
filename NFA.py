@@ -6,6 +6,13 @@ class NFAState(State.State):
             self.transitions[at] = []
         self.transitions[at].append(state)
 
+        # keep the parent NFA's named transition table in sync, if this
+        # state was created through NFA.new_state() (which sets self.nfa)
+        if getattr(self, "nfa", None) is not None:
+            table = self.nfa.transition_table
+            entry = table.setdefault(self.state_name, {})
+            entry.setdefault(at, []).append(state.state_name)
+
 class Fragment:
     def __init__(self, start, end):
         self.start = start
@@ -19,7 +26,7 @@ class NFA:
         self.regex = regex
         self.counter = 0
         self.symbols = set()
-        self.transition_table = set()
+        self.transition_table = {}
         self.start_state = self.start(regex).start
 
 
@@ -214,7 +221,8 @@ class NFA:
 
     def new_state(self, name, is_terminal):
         a = NFAState(name, is_terminal)
-        self.transition_table.add(a)
+        a.nfa = self
+        self.transition_table.setdefault(name, {})
         return a
 
     def print_table(self):
@@ -271,5 +279,7 @@ class NFA:
 
             print()
 
-
-
+    def print_named_transition_table(self):
+        # dumps self.transition_table: state_name -> {symbol: [target state names]}
+        for state_name in sorted(self.transition_table):
+            print(f"{state_name}: {self.transition_table[state_name]}")

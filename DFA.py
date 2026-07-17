@@ -21,10 +21,7 @@ class DFA:
 
         pass
     def minimize_nfa(self):
-        transitions = {}
-        self.dfa = None
-        print(f"Printing transitions for {self.nfa.start_state}")
-        temp = self.nfa.start_state.transitions
+        pass
 
 
 
